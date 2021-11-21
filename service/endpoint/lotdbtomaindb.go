@@ -66,11 +66,11 @@ func (s *LotDbToMainDbEndpoint) Ping() error {
 func (s *LotDbToMainDbEndpoint) Consume(from mysql.Position, rows []*model.RowRequest) error {
 	//var ms []*sarama.ProducerMessage
 	for _, row := range rows {
-		rule, _ := global.RuleIns(row.RuleKey)
-		if rule.TableColumnSize != len(row.Row) {
-			logs.Warnf("%s schema mismatching", row.RuleKey)
-			continue
-		}
+		//rule, _ := global.RuleIns(row.RuleKey)
+		//if rule.TableColumnSize != len(row.Row) {
+		//	logs.Warnf("%s schema mismatching", row.RuleKey)
+		//	continue
+		//}
 
 		metrics.UpdateActionNum(row.Action, row.RuleKey)
 
