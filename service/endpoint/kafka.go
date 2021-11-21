@@ -91,6 +91,11 @@ func (s *KafkaEndpoint) Consume(from mysql.Position, rows []*model.RowRequest) e
 
 		metrics.UpdateActionNum(row.Action, row.RuleKey)
 
+		if global.Cfg().LotDbToMainDb { //不produce message 到kafka
+			//to do,to process data to MainB,读取binlog的channel大小可设置成0或1 (原来代码:queue: make(chan interface{}, 4096)),这样如果处理数据到MainDb有问题不会丢失数据,当前处理消息位置还要记录防止处理失败丢数据
+			return nil
+		}
+
 		if rule.LuaEnable() {
 			ls, err := s.buildMessages(row, rule)
 			if err != nil {
