@@ -236,6 +236,7 @@ func (s *KafkaEndpoint) Close() {
 	}
 }
 
+//以后要移出kafka，用个单独的EndPoint
 func ProcessLotDbToMainDb(from mysql.Position, rows []*model.RowRequest) error {
 	return nil
 }
