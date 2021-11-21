@@ -180,18 +180,10 @@ func (s *handler) startListener() {
 			if needFlush && len(requests) > 0 && _transferService.endpointEnable.Load() {
 				err := _transferService.endpoint.Consume(from, requests)
 				if err != nil {
-					_transferService.endpointEnable.Store(false)
+					_transferService.endpointEnable.Store(false) //这个控制_transferService.endpointEnable.Load(),从而决定后面一段是否村binlog位置
 					metrics.SetDestState(metrics.DestStateFail)
 					logs.Error(err.Error())
 					logs.Errorf("%v", from, err)
-
-					if global.Cfg().LotDbToMainDb {
-						if err := _transferService.positionDao.Save(from); err != nil { //todo,处理失败保持原来binlog位置,防止数据丢失,to check
-							logs.Errorf("save sync position %s err %v, close sync", from, err)
-							_transferService.Close()
-							return
-						}
-					}
 
 					go _transferService.stopDump()
 				}
