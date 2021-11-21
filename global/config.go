@@ -273,6 +273,10 @@ func checkConfig(c *Config) error {
 		return errors.Errorf("empty rules not allowed")
 	}
 
+	if c.LotDbToMainDb {
+		c.BulkSize = 1
+	}
+
 	return nil
 }
 
