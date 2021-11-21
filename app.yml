@@ -39,7 +39,7 @@ web_admin_port: 8060 #web监控端口,默认8060
   #etcd_password: 123456 #etcd密码
 
 #目标类型
-target: redis # 支持redis、mongodb、elasticsearch、rocketmq、kafka、rabbitmq
+target: redis # 支持redis、mongodb、elasticsearch、rocketmq、kafka、rabbitmq、LotDbToMainDb
 
 #redis连接配置
 redis_addrs: 127.0.0.1:6379 #redis地址，多个用逗号分隔
