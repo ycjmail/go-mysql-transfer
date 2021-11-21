@@ -183,6 +183,14 @@ func (s *handler) startListener() {
 					_transferService.endpointEnable.Store(false)
 					metrics.SetDestState(metrics.DestStateFail)
 					logs.Error(err.Error())
+					logs.Errorf("%v", from, err)
+
+					if err := _transferService.positionDao.Save(from); err != nil { //todo,处理失败保持原来binlog位置,防止数据丢失,to check
+						logs.Errorf("save sync position %s err %v, close sync", from, err)
+						_transferService.Close()
+						return
+					}
+
 					go _transferService.stopDump()
 				}
 				requests = requests[0:0]
