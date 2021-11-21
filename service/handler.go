@@ -185,10 +185,12 @@ func (s *handler) startListener() {
 					logs.Error(err.Error())
 					logs.Errorf("%v", from, err)
 
-					if err := _transferService.positionDao.Save(from); err != nil { //todo,处理失败保持原来binlog位置,防止数据丢失,to check
-						logs.Errorf("save sync position %s err %v, close sync", from, err)
-						_transferService.Close()
-						return
+					if global.Cfg().LotDbToMainDb {
+						if err := _transferService.positionDao.Save(from); err != nil { //todo,处理失败保持原来binlog位置,防止数据丢失,to check
+							logs.Errorf("save sync position %s err %v, close sync", from, err)
+							_transferService.Close()
+							return
+						}
 					}
 
 					go _transferService.stopDump()
