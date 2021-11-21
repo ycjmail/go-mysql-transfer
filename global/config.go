@@ -72,9 +72,9 @@ type Config struct {
 	Flavor  string `yaml:"flavor"`
 	DataDir string `yaml:"data_dir"`
 
-	MainBbDsn     string `yaml:"main_db_dsn"`
-	LotDbToMainDb bool   `yaml:"lot_db_to_main_db"`
-	LotDbTopic    string `yaml:"lot_db_topic"`
+	MainBbDsn  string `yaml:"main_db_dsn"`
+	LotDbTopic string `yaml:"lot_db_topic"`
+	//LotDbToMainDb bool   `yaml:"lot_db_to_main_db"`
 
 	DumpExec       string `yaml:"mysqldump"`
 	SkipMasterData bool   `yaml:"skip_master_data"`
@@ -274,7 +274,7 @@ func checkConfig(c *Config) error {
 		return errors.Errorf("empty rules not allowed")
 	}
 
-	if c.LotDbToMainDb {
+	if c.IsLotDbToMainDb() {
 		c.BulkSize = 1
 	}
 
