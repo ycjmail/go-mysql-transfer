@@ -6,14 +6,14 @@ charset : utf8
 slave_id: 1001 #slave ID
 flavor: mysql #mysql or mariadb,默认mysql
 
+#系统相关配置
+#data_dir: D:\\transfer #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
+
 #add by ycj
 main_db_dsn: aaa
 lot_db_to_main_db: true
 lot_db_topic: LotDbUpMaster30_topic
 
-
-#系统相关配置
-#data_dir: D:\\transfer #应用产生的数据存放地址，包括日志、缓存数据等，默认当前运行目录下store文件夹
 #logger:
 #  level: info #日志级别；支持：debug|info|warn|error，默认info
 

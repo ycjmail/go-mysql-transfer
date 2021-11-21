@@ -71,6 +71,10 @@ type Config struct {
 	Flavor  string `yaml:"flavor"`
 	DataDir string `yaml:"data_dir"`
 
+	MainBbDsn     string `yaml:"main_db_dsn"`
+	LotDbToMainDb bool   `yaml:"lot_db_to_main_db"`
+	LotDbTopic    bool   `yaml:"lot_db_topic"`
+
 	DumpExec       string `yaml:"mysqldump"`
 	SkipMasterData bool   `yaml:"skip_master_data"`
 
