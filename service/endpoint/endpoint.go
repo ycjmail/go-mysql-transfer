@@ -71,6 +71,10 @@ func NewEndpoint(ds *canal.Canal) Endpoint {
 		return newKafkaEndpoint()
 	}
 
+	if cfg.IsLotDbToMainDb() {
+		return newLotDbToMainDbEndpoint()
+	}
+
 	if cfg.IsEls() {
 		if cfg.ElsVersion == 6 {
 			return newElastic6Endpoint()

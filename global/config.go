@@ -42,6 +42,7 @@ const (
 	_targetKafka         = "KAFKA"
 	_targetElasticsearch = "ELASTICSEARCH"
 	_targetScript        = "SCRIPT"
+	_targetLotDbToMainDb = "LOTDBTOMAINDB"
 
 	RedisGroupTypeSentinel = "sentinel"
 	RedisGroupTypeCluster  = "cluster"
@@ -73,7 +74,7 @@ type Config struct {
 
 	MainBbDsn     string `yaml:"main_db_dsn"`
 	LotDbToMainDb bool   `yaml:"lot_db_to_main_db"`
-	LotDbTopic    bool   `yaml:"lot_db_topic"`
+	LotDbTopic    string `yaml:"lot_db_topic"`
 
 	DumpExec       string `yaml:"mysqldump"`
 	SkipMasterData bool   `yaml:"skip_master_data"`
@@ -447,6 +448,10 @@ func (c *Config) IsRabbitmq() bool {
 
 func (c *Config) IsKafka() bool {
 	return strings.ToUpper(c.Target) == _targetKafka
+}
+
+func (c *Config) IsLotDbToMainDb() bool {
+	return strings.ToUpper(c.Target) == _targetLotDbToMainDb
 }
 
 func (c *Config) IsEls() bool {
