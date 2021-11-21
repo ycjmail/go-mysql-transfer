@@ -47,10 +47,9 @@ func newLotDbToMainDbEndpoint() *LotDbToMainDbEndpoint {
 }
 
 func (s *LotDbToMainDbEndpoint) Connect() error {
-	cfg := sarama.NewConfig()
-	cfg.Producer.Partitioner = sarama.NewRandomPartitioner
-
 	//todo add connection to maindb
+	//cfg := sarama.NewConfig()
+	//cfg.Producer.Partitioner = sarama.NewRandomPartitioner
 
 	//if global.Cfg().LotDbToMainDbSASLUser != "" && global.Cfg().LotDbToMainDbSASLPassword != "" {
 	//	cfg.Net.SASL.Enable = true
@@ -125,6 +124,7 @@ func (s *LotDbToMainDbEndpoint) Consume(from mysql.Position, rows []*model.RowRe
 }
 
 func (s *LotDbToMainDbEndpoint) Stock(rows []*model.RowRequest) int64 {
+	//todo,要debug跟踪函数这个在哪里调用,从原来没处理的消息得到的 rows?
 	expect := true
 	for _, row := range rows {
 		rule, _ := global.RuleIns(row.RuleKey)
@@ -132,9 +132,6 @@ func (s *LotDbToMainDbEndpoint) Stock(rows []*model.RowRequest) int64 {
 			logs.Warnf("%s schema mismatching", row.RuleKey)
 			continue
 		}
-
-		//todo 从原来没处理的消息得到的 rows?
-
 		//if rule.LuaEnable() {
 		//	ls, err := s.buildMessages(row, rule)
 		//	if err != nil {
