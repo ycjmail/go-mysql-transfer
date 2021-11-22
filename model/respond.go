@@ -31,8 +31,10 @@ type MQRespond struct {
 	Action    string      `json:"action"`
 	Timestamp uint32      `json:"timestamp"`
 	Raw       interface{} `json:"raw,omitempty"`
-	Date      interface{} `json:"date"`
-	ByteArray []byte      `json:"-"`
+	TableName string      `json:"table_name"` //added by ycj
+	Date      interface{} `json:"data"`       //changed by ycj
+	//Date      interface{} `json:"date"`
+	ByteArray []byte `json:"-"`
 }
 
 type ESRespond struct {

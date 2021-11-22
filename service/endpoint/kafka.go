@@ -200,6 +200,7 @@ func (s *KafkaEndpoint) buildMessage(row *model.RowRequest, rule *global.Rule) (
 	resp := new(model.MQRespond)
 	resp.Action = row.Action
 	resp.Timestamp = row.Timestamp
+	resp.TableName = rule.Table //added by ycj
 	if rule.ValueEncoder == global.ValEncoderJson {
 		resp.Date = kvm
 	} else {
