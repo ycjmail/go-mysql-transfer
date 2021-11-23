@@ -158,7 +158,7 @@ func (s *handler) startListener() {
 				switch v := v.(type) {
 				case model.PosRequest:
 					now := time.Now()
-					if v.Force || now.Sub(lastSavedTime) > 3*time.Second {
+					if v.Force || now.Sub(lastSavedTime) > 1*time.Second { //now.Sub(lastSavedTime) > 3*time.Second {
 						lastSavedTime = now
 						needFlush = true
 						needSavePos = true

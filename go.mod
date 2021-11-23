@@ -7,6 +7,8 @@ require (
 	github.com/apache/rocketmq-client-go/v2 v2.0.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis v6.15.8+incompatible
+	github.com/go-sql-driver/mysql v1.5.0
+	github.com/jinzhu/gorm v1.9.16
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/json-iterator/go v1.1.9
 	github.com/juju/errors v0.0.0-20200330140219-3fe23663418f

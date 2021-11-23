@@ -32,7 +32,7 @@ type MQRespond struct {
 	Timestamp uint32      `json:"timestamp"`
 	Raw       interface{} `json:"raw,omitempty"`
 	TableName string      `json:"table_name"` //added by ycj
-	Date      interface{} `json:"data"`       //changed by ycj
+	Data      interface{} `json:"data"`       //changed by ycj
 	//Date      interface{} `json:"date"`
 	ByteArray []byte `json:"-"`
 }

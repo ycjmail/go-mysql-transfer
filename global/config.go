@@ -40,9 +40,9 @@ const (
 	_targetRocketmq      = "ROCKETMQ"
 	_targetRabbitmq      = "RABBITMQ"
 	_targetKafka         = "KAFKA"
+	_targetLotDbToMainDb = "LOTDBTOMAINDB"
 	_targetElasticsearch = "ELASTICSEARCH"
 	_targetScript        = "SCRIPT"
-	_targetLotDbToMainDb = "LOTDBTOMAINDB"
 
 	RedisGroupTypeSentinel = "sentinel"
 	RedisGroupTypeCluster  = "cluster"
@@ -179,6 +179,10 @@ func initConfig(fileName string) error {
 		}
 	case _targetRabbitmq:
 		if err := checkRabbitmqConfig(&c); err != nil {
+			return errors.Trace(err)
+		}
+	case _targetLotDbToMainDb:
+		if err := checkKafkaConfig(&c); err != nil {
 			return errors.Trace(err)
 		}
 	case _targetKafka:
@@ -377,6 +381,19 @@ func checkKafkaConfig(c *Config) error {
 
 	c.isReserveRawData = true
 	c.isMQ = true
+	return nil
+}
+
+func checkLotDbToMainDb(c *Config) error {
+	if len(c.MainBbDsn) == 0 {
+		return errors.Errorf("empty MainBbDsn not allowed")
+	}
+	if len(c.LotDbTopic) == 0 {
+		return errors.Errorf("empty LotDbTopic not allowed")
+	}
+
+	//c.isReserveRawData = true
+	//c.isMQ = true
 	return nil
 }
 
