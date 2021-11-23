@@ -29,6 +29,7 @@ type LotDbToMainDbEndpoint struct {
 	dbDefault    *gorm.DB
 	lotDbTopic   string
 	dbParkLotIds []uint
+	lotTopicDsn  model.LotTopicDsn
 	retryLock    sync.Mutex
 }
 
@@ -50,7 +51,7 @@ func (s *LotDbToMainDbEndpoint) Connect() error {
 
 	//var dbParkLotIds []uint
 	err = db.Model(model.LotDbParkLotId{}).
-		Where("topic=?", s.lotDbTopic).
+		Where("db_topic=?", s.lotDbTopic).
 		Order("park_lot_id").Pluck("park_lot_id", &s.dbParkLotIds).Error
 	if err != nil {
 		panic(err)
@@ -58,6 +59,14 @@ func (s *LotDbToMainDbEndpoint) Connect() error {
 	if len(s.dbParkLotIds) == 0 {
 		fmt.Println("请设置表lot_db_park_lot_ids相关数据")
 		panic("请设置表lot_db_park_lot_ids相关数据")
+	}
+
+	err = db.Model(model.LotTopicDsn{}).
+		Where("db_topic=?", s.lotDbTopic).
+		Find(&s.lotTopicDsn).Error
+	if err != nil {
+		fmt.Println("请设置表lot_topic_dsns相关数据")
+		panic(err)
 	}
 
 	//todo add connection to maindb
@@ -300,6 +309,9 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 	i_park_lot_id := int(f_park_lot_id)
 	i_lot_rec_id := int(f_lot_rec_id)
 	v_updated_at, ok := kfDbChangeMsg.MapData["updated_at"]
+	v_id, _ := kfDbChangeMsg.MapData["id"]
+	f_id, _ := v_id.(float64)
+	i_id := uint(f_id)
 	var updatedAtValid bool
 	if ok && v_updated_at != nil {
 		updatedAtValid = true
@@ -310,10 +322,16 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 		tools.InStringSlice("rec_operated_by", colNames) &&
 		i_park_lot_id > 0 &&
 		i_lot_rec_id > 0 &&
+		i_id > 0 &&
 		updatedAtValid &&
 		tools.SliceContains(uint(i_park_lot_id), s.dbParkLotIds) {
 
 		if kfDbChangeMsg.Action == "insert" { //gorm2.0支持从map create
+			if i_id%uint(s.lotTopicDsn.AutoIncrementIncrement) != uint(s.lotTopicDsn.AutoIncrementOffset) {
+				logs.Errorf("id=%d,不符合车场数据库id规则,AutoIncrementIncrement=%d,AutoIncrementOffset=%d", i_id, s.lotTopicDsn.AutoIncrementIncrement, s.lotTopicDsn.AutoIncrementOffset)
+				//panic(err)
+				return nil
+			}
 			//if tools.InStringSlice("main_rec_id", colNames) {
 			//	kfDbChangeMsg.MapData["main_rec_id"] = kfDbChangeMsg.MapData["id"]
 			//}
@@ -340,7 +358,7 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 			//	}
 			//}
 			//kfDbChangeMsg.MapData["id"] = nil
-			delete(kfDbChangeMsg.MapData, "id")
+			//delete(kfDbChangeMsg.MapData, "id")
 
 			sql, slColValues := tools.BuildInsertSql(kfDbChangeMsg.TableName, kfDbChangeMsg.MapData)
 			err = db.Exec(sql, slColValues...).Error
@@ -354,7 +372,7 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 			//if tools.InStringSlice("main_rec_id", colNames) {
 			//	kfDbChangeMsg.MapData["main_rec_id"] = kfDbChangeMsg.MapData["id"]
 			//}
-			delete(kfDbChangeMsg.MapData, "id")
+			//delete(kfDbChangeMsg.MapData, "id")
 			//dbRet := db.Table(kfDbChangeMsg.TableName).
 			//	Where("id=?", kfDbChangeMsg.MapData["id"]).
 			//	Where("park_lot_id in(?)", s.dbParkLotIds).
@@ -370,7 +388,7 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 			//}
 
 			dbRet := db.Table(kfDbChangeMsg.TableName).
-				Where("lot_rec_id=? and park_lot_id=?", kfDbChangeMsg.MapData["lot_rec_id"], kfDbChangeMsg.MapData["park_lot_id"]).
+				Where("id=?", kfDbChangeMsg.MapData["id"]).
 				Where("park_lot_id in(?)", s.dbParkLotIds).
 				Where("updated_at is null Or updated_at<?", kfDbChangeMsg.MapData["updated_at"]). //这个相等时间(updated_at<=?)不能更新,否者如果有两个相同时间的更新会导致循环不断,updated_at精度待改到微秒
 				Updates(kfDbChangeMsg.MapData)
