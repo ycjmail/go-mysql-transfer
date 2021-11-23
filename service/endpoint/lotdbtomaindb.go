@@ -303,25 +303,25 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 		return nil
 	}
 	v_park_lot_id, _ := kfDbChangeMsg.MapData["park_lot_id"]
-	v_lot_rec_id, _ := kfDbChangeMsg.MapData["lot_rec_id"]
 	f_park_lot_id, _ := v_park_lot_id.(float64)
-	f_lot_rec_id, _ := v_lot_rec_id.(float64)
 	i_park_lot_id := int(f_park_lot_id)
-	i_lot_rec_id := int(f_lot_rec_id)
-	v_updated_at, ok := kfDbChangeMsg.MapData["updated_at"]
+	//v_lot_rec_id, _ := kfDbChangeMsg.MapData["lot_rec_id"]
+	//f_lot_rec_id, _ := v_lot_rec_id.(float64)
+	//i_lot_rec_id := int(f_lot_rec_id)
 	v_id, _ := kfDbChangeMsg.MapData["id"]
 	f_id, _ := v_id.(float64)
 	i_id := uint(f_id)
+
+	v_updated_at, ok := kfDbChangeMsg.MapData["updated_at"]
 	var updatedAtValid bool
 	if ok && v_updated_at != nil {
 		updatedAtValid = true
 	}
 
 	if tools.InStringSlice("park_lot_id", colNames) &&
-		tools.InStringSlice("lot_rec_id", colNames) &&
+		//tools.InStringSlice("lot_rec_id", colNames) &&
 		tools.InStringSlice("rec_operated_by", colNames) &&
 		i_park_lot_id > 0 &&
-		i_lot_rec_id > 0 &&
 		i_id > 0 &&
 		updatedAtValid &&
 		tools.SliceContains(uint(i_park_lot_id), s.dbParkLotIds) {
@@ -409,7 +409,7 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 			return nil
 		}
 	} else {
-		fmt.Println("LotDbToMainDb 只能传递 updated_at有效,对应lotDb.park_lot_id与lot_rec_id的改变数据")
+		fmt.Println("LotDbToMainDb 只能传递 updated_at有效,对应lotDb.park_lot_id的改变数据")
 		return nil
 	}
 	//break

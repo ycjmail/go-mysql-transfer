@@ -38,16 +38,9 @@ type handler struct {
 }
 
 func newHandler() *handler {
-	if global.Cfg().BulkSize == 1 {
-		return &handler{
-			queue: make(chan interface{}, 1),
-			stop:  make(chan struct{}, 1),
-		}
-	} else {
-		return &handler{
-			queue: make(chan interface{}, 4096),
-			stop:  make(chan struct{}, 1),
-		}
+	return &handler{
+		queue: make(chan interface{}, 4096),
+		stop:  make(chan struct{}, 1),
 	}
 }
 
