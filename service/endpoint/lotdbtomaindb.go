@@ -24,8 +24,6 @@ import (
 )
 
 type LotDbToMainDbEndpoint struct {
-	//client   sarama.Client
-	//producer sarama.AsyncProducer
 	dsn          string
 	dbDefault    *gorm.DB
 	lotDbTopic   string
@@ -70,33 +68,6 @@ func (s *LotDbToMainDbEndpoint) Connect() error {
 		panic(err)
 	}
 
-	//todo add connection to maindb
-	//cfg := sarama.NewConfig()
-	//cfg.Producer.Partitioner = sarama.NewRandomPartitioner
-
-	//if global.Cfg().LotDbToMainDbSASLUser != "" && global.Cfg().LotDbToMainDbSASLPassword != "" {
-	//	cfg.Net.SASL.Enable = true
-	//	cfg.Net.SASL.User = global.Cfg().LotDbToMainDbSASLUser
-	//	cfg.Net.SASL.Password = global.Cfg().LotDbToMainDbSASLPassword
-	//}
-	//
-	//var err error
-	//var client sarama.Client
-	//ls := strings.Split(global.Cfg().LotDbToMainDbAddr, ",")
-	//client, err = sarama.NewClient(ls, cfg)
-	//if err != nil {
-	//	return errors.Errorf("unable to create LotDbToMainDb client: %q", err)
-	//}
-	//
-	//var producer sarama.AsyncProducer
-	//producer, err = sarama.NewAsyncProducerFromClient(client)
-	//if err != nil {
-	//	return errors.Errorf("unable to create LotDbToMainDb producer: %q", err)
-	//}
-	//
-	//s.producer = producer
-	//s.client = client
-
 	return nil
 }
 
@@ -106,7 +77,6 @@ func (s *LotDbToMainDbEndpoint) Ping() error {
 }
 
 func (s *LotDbToMainDbEndpoint) Consume(from mysql.Position, rows []*model.RowRequest) error {
-	//var ms []*sarama.ProducerMessage
 	for _, row := range rows {
 		rule, _ := global.RuleIns(row.RuleKey)
 		if rule.TableColumnSize != len(row.Row) {
@@ -127,30 +97,7 @@ func (s *LotDbToMainDbEndpoint) Consume(from mysql.Position, rows []*model.RowRe
 			return errors.Errorf(errors.ErrorStack(err))
 		}
 
-		//if rule.LuaEnable() {
-		//	ls, err := s.buildMessages(row, rule)
-		//	if err != nil {
-		//		log.Println("Lua 脚本执行失败!!! ,详情请参见日志")
-		//		return errors.Errorf("lua 脚本执行失败 : %s ", errors.ErrorStack(err))
-		//	}
-		//	ms = append(ms, ls...)
-		//} else {
-		//	m, err := s.buildMessage(row, rule)
-		//	if err != nil {
-		//		return errors.Errorf(errors.ErrorStack(err))
-		//	}
-		//	ms = append(ms, m)
-		//}
 	}
-
-	//for _, m := range ms {
-	//	s.producer.Input() <- m
-	//	select {
-	//	case err := <-s.producer.Errors():
-	//		return err
-	//	default:
-	//	}
-	//}
 
 	logs.Infof("处理完成 %d 条数据", len(rows))
 	return nil
@@ -165,43 +112,6 @@ func (s *LotDbToMainDbEndpoint) Stock(rows []*model.RowRequest) int64 {
 			logs.Warnf("%s schema mismatching", row.RuleKey)
 			continue
 		}
-		//if rule.LuaEnable() {
-		//	ls, err := s.buildMessages(row, rule)
-		//	if err != nil {
-		//		logs.Errorf(errors.ErrorStack(err))
-		//		expect = false
-		//		break
-		//	}
-		//	for _, m := range ls {
-		//		s.producer.Input() <- m
-		//		select {
-		//		case err := <-s.producer.Errors():
-		//			logs.Error(err.Error())
-		//			expect = false
-		//			break
-		//		default:
-		//		}
-		//	}
-		//	if !expect {
-		//		break
-		//	}
-		//} else {
-		//	m, err := s.buildMessage(row, rule)
-		//	if err != nil {
-		//		logs.Errorf(errors.ErrorStack(err))
-		//		expect = false
-		//		break
-		//	}
-		//	s.producer.Input() <- m
-		//	select {
-		//	case err := <-s.producer.Errors():
-		//		logs.Error(err.Error())
-		//		expect = false
-		//		break
-		//	default:
-		//
-		//	}
-		//}
 	}
 
 	if !expect {
@@ -210,26 +120,6 @@ func (s *LotDbToMainDbEndpoint) Stock(rows []*model.RowRequest) int64 {
 
 	return int64(len(rows))
 }
-
-//func (s *LotDbToMainDbEndpoint) buildMessages(row *model.RowRequest, rule *global.Rule) ([]*sarama.ProducerMessage, error) {
-//	kvm := rowMap(row, rule, true)
-//	ls, err := luaengine.DoMQOps(kvm, row.Action, rule)
-//	if err != nil {
-//		return nil, errors.Errorf("lua 脚本执行失败 : %s ", err)
-//	}
-//
-//	var ms []*sarama.ProducerMessage
-//	for _, resp := range ls {
-//		m := &sarama.ProducerMessage{
-//			Topic: resp.Topic,
-//			Value: sarama.ByteEncoder(resp.ByteArray),
-//		}
-//		logs.Infof("topic: %s, message: %s", resp.Topic, string(resp.ByteArray))
-//		ms = append(ms, m)
-//	}
-//
-//	return ms, nil
-//}
 
 func (s *LotDbToMainDbEndpoint) buildMessage(row *model.RowRequest, rule *global.Rule) (*model.MQRespond, error) {
 	kvm := rowMap(row, rule, false)
@@ -247,16 +137,6 @@ func (s *LotDbToMainDbEndpoint) buildMessage(row *model.RowRequest, rule *global
 		resp.Raw = oldRowMap(row, rule, false)
 	}
 
-	//body, err := json.Marshal(resp)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//m := &sarama.ProducerMessage{
-	//	Topic: rule.LotDbToMainDbTopic,
-	//	Value: sarama.ByteEncoder(body),
-	//}
-	//logs.Infof("topic: %s, message: %s", rule.LotDbToMainDbTopic, string(body))
-	//logs.Infof("topic: %s, message: %s", rule.KafkaTopic, string(body))
 	return resp, nil
 }
 
@@ -306,9 +186,6 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 	v_park_lot_id, _ := kfDbChangeMsg.MapData["park_lot_id"]
 	f_park_lot_id, _ := v_park_lot_id.(float64)
 	i_park_lot_id := int(f_park_lot_id)
-	//v_lot_rec_id, _ := kfDbChangeMsg.MapData["lot_rec_id"]
-	//f_lot_rec_id, _ := v_lot_rec_id.(float64)
-	//i_lot_rec_id := int(f_lot_rec_id)
 	v_id, _ := kfDbChangeMsg.MapData["id"]
 	f_id, _ := v_id.(float64)
 	i_id := uint(f_id)
@@ -326,7 +203,6 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 	}
 
 	if tools.InStringSlice("park_lot_id", colNames) &&
-		//tools.InStringSlice("lot_rec_id", colNames) &&
 		tools.InStringSlice("rec_operated_by", colNames) &&
 		i_park_lot_id > 0 &&
 		i_id > 0 &&
@@ -336,42 +212,13 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 		if kfDbChangeMsg.Action == "insert" { //gorm2.0支持从map create
 			if i_id%uint(s.lotTopicDsn.AutoIncrementIncrement) != uint(s.lotTopicDsn.AutoIncrementOffset) {
 				logs.Errorf("id=%d,不符合车场数据库id规则,AutoIncrementIncrement=%d,AutoIncrementOffset=%d", i_id, s.lotTopicDsn.AutoIncrementIncrement, s.lotTopicDsn.AutoIncrementOffset)
-				//panic(err)
 				return nil
 			}
-			//if tools.InStringSlice("main_rec_id", colNames) {
-			//	kfDbChangeMsg.MapData["main_rec_id"] = kfDbChangeMsg.MapData["id"]
-			//}
-
-			//{
-			//	//kfDbChangeMsg.MapData["rec_operated_by"] = "LotDb"
-			//	dbRet := db.Table(kfDbChangeMsg.TableName).Where("park_lot_id=? and lot_rec_id=?", kfDbChangeMsg.MapData["park_lot_id"], kfDbChangeMsg.MapData["lot_rec_id"]).Updates(kfDbChangeMsg.MapData)
-			//	if dbRet.Error != nil {
-			//		fmt.Println(err)
-			//		panic(err)
-			//		//break
-			//	}
-			//	if dbRet.RowsAffected > 0 { //如果没更新,下面继续insert
-			//		return nil
-			//	}
-			//	dbRet = db.Table(kfDbChangeMsg.TableName).Where("id=? ", kfDbChangeMsg.MapData["id"]).Updates(kfDbChangeMsg.MapData)
-			//	if dbRet.Error != nil {
-			//		fmt.Println(err)
-			//		panic(err)
-			//		//break
-			//	}
-			//	if dbRet.RowsAffected > 0 { //如果没更新,下面继续insert
-			//		return nil
-			//	}
-			//}
-			//kfDbChangeMsg.MapData["id"] = nil
-			//delete(kfDbChangeMsg.MapData, "id")
 
 			sql, slColValues := tools.BuildInsertSql(kfDbChangeMsg.TableName, kfDbChangeMsg.MapData)
 			err = db.Exec(sql, slColValues...).Error
 			if err != nil {
 				logs.Errorf("%s", err)
-				//panic(err)
 				return nil
 			}
 
@@ -416,8 +263,5 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 		fmt.Println("LotDbToMainDb 只能传递 updated_at有效,对应lotDb.park_lot_id的改变数据")
 		return nil
 	}
-	//break
-
-	//fmt.Println(row)
 	return nil
 }
