@@ -35,6 +35,7 @@ type KfDbChangeMsg struct {
 	Timestamp uint32                 `json:"timestamp"`
 	TableName string                 `json:"table_name"` //added by ycj
 	MapData   map[string]interface{} `json:"data"`       //changed by ycj
+	MapOld    map[string]interface{} `json:"raw"`        //changed by ycj
 	//Date      interface{} `json:"date"`
 	//Raw       interface{} `json:"raw,omitempty"`
 	//ByteArray []byte      `json:"-"`

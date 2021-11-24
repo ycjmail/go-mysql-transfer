@@ -138,15 +138,19 @@ rule:
     schema: LotDbUpMaster
     table: cash_flows
     kafka_topic: LotDbMaster30_topic
+    reserve_raw_data: true
   -
     schema: LotDbUpMaster
     table: orders
     kafka_topic: LotDbMaster30_topic
+    reserve_raw_data: true
   -
     schema: LotDbUpMaster
     table: park_passings
     kafka_topic: LotDbMaster30_topic
+    reserve_raw_data: true
   -
     schema: LotDbUpMaster
     table: park_vehicles
     kafka_topic: LotDbMaster30_topic
+    reserve_raw_data: true

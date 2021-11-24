@@ -5,9 +5,10 @@ import (
 	"github.com/juju/errors"
 	"github.com/siddontang/go-mysql/canal"
 	"go-mysql-transfer/util/tools"
+	"log"
+
 	//"github.com/Shopify/sarama"
 	_ "github.com/siddontang/go-mysql/canal"
-	_ "log"
 	_ "strings"
 	"sync"
 
@@ -369,23 +370,20 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 			}
 
 		} else if kfDbChangeMsg.Action == "update" {
-			//if tools.InStringSlice("main_rec_id", colNames) {
-			//	kfDbChangeMsg.MapData["main_rec_id"] = kfDbChangeMsg.MapData["id"]
-			//}
-			//delete(kfDbChangeMsg.MapData, "id")
-			//dbRet := db.Table(kfDbChangeMsg.TableName).
-			//	Where("id=?", kfDbChangeMsg.MapData["id"]).
-			//	Where("park_lot_id in(?)", s.dbParkLotIds).
-			//	Where("updated_at is null Or updated_at<?", kfDbChangeMsg.MapData["updated_at"]). //这个相等时间(updated_at<=?)不能更新,否者如果有两个相同时间的更新会导致循环不断,updated_at精度待改到微秒
-			//	Updates(kfDbChangeMsg.MapData)
-			//if dbRet.Error != nil {
-			//	fmt.Println(err)
-			//	panic(err)
-			//	//break
-			//}
-			//if dbRet.RowsAffected > 0 { //如果没更新,下面继续insert
-			//	return nil
-			//}
+			v_id_old, _ := kfDbChangeMsg.MapOld["id"]
+			f_id_old, _ := v_id_old.(float64)
+			i_id_old := uint(f_id_old)
+			if i_id_old == 0 {
+				logs.Errorf("update必须要原来记录id，检查go_mysql_transfer配置文件app.yml中reserve_raw_data: true")
+				return nil
+			}
+
+			if i_id_old != i_id {
+				strErr := fmt.Sprintf("从LotDb(车场数据库)到MainDb(主数据库),不允许改id,table_name=%s,id=%d,id_old=%d", kfDbChangeMsg.TableName, i_id, i_id_old)
+				log.Println(strErr)
+				logs.Errorf(strErr)
+				return nil
+			}
 
 			dbRet := db.Table(kfDbChangeMsg.TableName).
 				Where("id=?", kfDbChangeMsg.MapData["id"]).

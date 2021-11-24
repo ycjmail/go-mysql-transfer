@@ -248,7 +248,7 @@ func (s *TransferService) completeRules() error {
 	for _, rule := range global.RuleInsList() {
 		tableMata, err := s.canal.GetTable(rule.Schema, rule.Table)
 		if err != nil {
-			return errors.Trace(err)
+			return errors.Trace(errors.New("table=" + rule.Table + "," + err.Error()))
 		}
 		if len(tableMata.PKColumns) == 0 {
 			if !global.Cfg().SkipNoPkTable {
