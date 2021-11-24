@@ -150,6 +150,7 @@ func (s *LotDbToMainDbEndpoint) Close() {
 }
 
 //ProcessLotDbToMainDb //to do,to process data to MainB,读取binlog的channel大小可设置成1 (原来代码:queue: make(chan interface{}, 4096),bulk_size=1),这样如果处理数据到MainDb有问题不会丢失数据,当前处理消息位置还要记录防止处理失败丢数据
+//todo 可能要禁止LotDb删除记录
 func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqRespond *model.MQRespond) error {
 	fmt.Printf("%+v\n", mqRespond)
 
