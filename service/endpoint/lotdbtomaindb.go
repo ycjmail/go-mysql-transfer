@@ -319,6 +319,12 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 		updatedAtValid = true
 	}
 
+	if !updatedAtValid {
+		err := errors.New("updated_at字段必须有效")
+		logs.Errorf("%s", err)
+		return err
+	}
+
 	if tools.InStringSlice("park_lot_id", colNames) &&
 		//tools.InStringSlice("lot_rec_id", colNames) &&
 		tools.InStringSlice("rec_operated_by", colNames) &&
