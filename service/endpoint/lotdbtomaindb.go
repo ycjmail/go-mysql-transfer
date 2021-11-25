@@ -199,8 +199,19 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 
 	if !updatedAtValid {
 		err := errors.New("updated_at字段必须有效")
+		fmt.Println(err)
 		logs.Errorf("%s", err)
-		return err
+		return nil //return err,binlog处理不移动
+	}
+
+	var mapColVal = make(map[string]interface{}, 0)
+	if kfDbChangeMsg.Action == "insert" || kfDbChangeMsg.Action == "update" {
+		for _, v := range colNames {
+			val, ok := kfDbChangeMsg.MapData[v]
+			if ok {
+				mapColVal[v] = val
+			}
+		}
 	}
 
 	if tools.InStringSlice("park_lot_id", colNames) &&
@@ -216,7 +227,7 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 				return nil
 			}
 
-			sql, slColValues := tools.BuildInsertSql(kfDbChangeMsg.TableName, kfDbChangeMsg.MapData)
+			sql, slColValues := tools.BuildInsertSql(kfDbChangeMsg.TableName, mapColVal) // kfDbChangeMsg.MapData)
 			err = db.Exec(sql, slColValues...).Error
 			if err != nil {
 				logs.Errorf("%s", err)
@@ -243,7 +254,7 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 				Where("id=?", kfDbChangeMsg.MapData["id"]).
 				Where("park_lot_id in(?)", s.dbParkLotIds).
 				Where("updated_at is null Or updated_at<?", kfDbChangeMsg.MapData["updated_at"]). //这个相等时间(updated_at<=?)不能更新,否者如果有两个相同时间的更新会导致循环不断,updated_at精度待改到微秒
-				Updates(kfDbChangeMsg.MapData)
+				Updates(mapColVal)                                                                //Updates(kfDbChangeMsg.MapData)
 			if dbRet.Error != nil {
 				logs.Errorf("%s", err)
 				return nil
