@@ -197,6 +197,11 @@ func (s *LotDbToMainDbEndpoint) ProcessLotDbToMainDb(from mysql.Position, mqResp
 		updatedAtValid = true
 	}
 
+	if i_id == 0 {
+		logs.Errorf("id=0忽略,%+v", kfDbChangeMsg.MapData)
+		return nil
+	}
+
 	if !updatedAtValid {
 		err := errors.New("updated_at字段必须有效")
 		fmt.Println(err)
