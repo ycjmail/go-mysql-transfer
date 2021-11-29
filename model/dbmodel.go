@@ -8,7 +8,7 @@ type LotDbParkLotId struct {
 	BaseModel
 	ParkLotId uint   `gorm:"unique_index;type:int;not null;default:0;"`                  //表名
 	TenantId  uint   `gorm:"index;type:int;not null;default:0;"`                         //表记录Id
-	Topic     string `gorm:"type:varchar(50);not null;default:'';comment='Kafka Topic'"` //Kafka Topic
+	DbTopic   string `gorm:"type:varchar(50);not null;default:'';comment='Kafka Topic'"` //Kafka Topic
 }
 
 type LotTopicDsn struct {
