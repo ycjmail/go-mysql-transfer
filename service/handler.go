@@ -18,6 +18,7 @@
 package service
 
 import (
+	"fmt"
 	"go-mysql-transfer/metrics"
 	"log"
 	"time"
@@ -61,12 +62,13 @@ func (s *handler) OnTableChanged(schema, table string) error {
 	return nil
 }
 
-func (s *handler) OnDDL(nextPos mysql.Position, _ *replication.QueryEvent) error {
+func (s *handler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEvent) error {
 	s.queue <- model.PosRequest{
 		Name:  nextPos.Name,
 		Pos:   nextPos.Pos,
 		Force: true,
 	}
+	fmt.Println(string(queryEvent.Query))
 	return nil
 }
 
